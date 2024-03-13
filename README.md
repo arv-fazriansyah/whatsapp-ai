@@ -39,7 +39,7 @@ Untuk menggunakan proyek ini, Anda perlu melakukan beberapa langkah instalasi. I
 
 8. **Memperbarui package yang tersedia**
    ```bash
-   npm update
+   npm install puppeteer@latest
    ```
 
 Setelah langkah-langkah di atas selesai, Anda siap untuk menggunakan proyek ini. Pastikan untuk mengikuti langkah-langkah konfigurasi tambahan yang mungkin dibutuhkan sebelum menjalankan aplikasi.
