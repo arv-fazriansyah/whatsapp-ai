@@ -62,8 +62,10 @@ async function handleMessage(message, retry = false) {
         if (message.body.toLowerCase() === '!new') {
             // Remove conversation from Firebase
             const sanitizedPhoneNumber = message.from
-            .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
-            .replace('us', ''); // Menghapus 'us'
+                .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
+                .replace('us', '') // Menghapus 'us'
+                .replace('s', ''); // Menghapus 's' (jika ada)
+          
             await db.ref('history/' + sanitizedPhoneNumber).remove();
             
             // Remove conversation from memory
@@ -75,8 +77,10 @@ async function handleMessage(message, retry = false) {
 
         // Load existing conversation history from Firebase
         const sanitizedPhoneNumber = message.from
-        .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
-        .replace('us', ''); // Menghapus 'us'
+            .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
+            .replace('us', '') // Menghapus 'us'
+            .replace('s', ''); // Menghapus 's' (jika ada)
+
         const userHistorySnapshot = await db.ref('history/' + sanitizedPhoneNumber).once('value');
         const userHistory = userHistorySnapshot.val() || [];
 
