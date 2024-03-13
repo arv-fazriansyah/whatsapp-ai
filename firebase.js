@@ -35,8 +35,6 @@ const history = [
     { role: "model", parts: [{ text: "Halo, aku Veronisa dirancang oleh fazriansyah.my.id. Asisten yang sangat membantu, kreatif, pintar, dan ramah." }] },
 ];
 
-let existingConversation = {}; // Changed to let to allow reassignment
-
 const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { args: ['--no-sandbox'] } });
 
 client.on('ready', () => console.log('Client is ready!'));
@@ -46,14 +44,6 @@ client.on('message_create', handleMessage);
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-// Load existing conversation history from Firebase when the application starts
-db.ref('history').once('value', snapshot => {
-    const data = snapshot.val();
-    if (data) {
-        existingConversation = data;
-    }
-});
-
 async function handleMessage(message, retry = false) {
     if (message.isBroadcast) return; // No response for status_broadcast messages
     if (message.fromMe) return;
@@ -61,32 +51,20 @@ async function handleMessage(message, retry = false) {
     try {
         if (message.body.toLowerCase() === '!new') {
             // Remove conversation from Firebase
-            const sanitizedPhoneNumber = message.from
-                .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
-                .replace('us', '') // Menghapus 'us'
-                .replace('s', ''); // Menghapus 's' (jika ada)
-          
+            const sanitizedPhoneNumber = message.from.replace(/[@.\-+cu]|us|s$/g, '');
             await db.ref('history/' + sanitizedPhoneNumber).remove();
-            
-            // Remove conversation from memory
-            delete existingConversation[message.from];
-            
+
             message.reply("_New conversation started_");
             return;
         }
 
-        // Load existing conversation history from Firebase
-        const sanitizedPhoneNumber = message.from
-            .replace(/[.@\-\+cu]/g, '') // Menghapus karakter . @ - + c u
-            .replace('us', '') // Menghapus 'us'
-            .replace('s', ''); // Menghapus 's' (jika ada)
+        const sanitizedPhoneNumber = message.from.replace(/[@.\-+cu]|us|s$/g, '');
+        let userHistory = [];
 
+        // Check if conversation history exists in Firebase
         const userHistorySnapshot = await db.ref('history/' + sanitizedPhoneNumber).once('value');
-        const userHistory = userHistorySnapshot.val() || [];
-
-        // Update existing conversation or initialize if not present
-        if (!existingConversation[message.from]) {
-            existingConversation[message.from] = [];
+        if (userHistorySnapshot.exists()) {
+            userHistory = userHistorySnapshot.val();
         }
 
         const chat = model.startChat({
@@ -99,13 +77,13 @@ async function handleMessage(message, retry = false) {
         const modelResponse = result.response.text();
 
         // Push new message to existing conversation
-        existingConversation[message.from].push(
+        userHistory.push(
             { role: "user", parts: [{ text: message.body }] },
             { role: "model", parts: [{ text: modelResponse }] }
         );
 
         // Store the updated chat history to Firebase
-        db.ref('history/' + sanitizedPhoneNumber).set(existingConversation[message.from]);
+        await db.ref('history/' + sanitizedPhoneNumber).set(userHistory);
 
         message.reply(modelResponse);
     } catch (error) {
@@ -116,9 +94,6 @@ async function handleMessage(message, retry = false) {
             if (!retry) {
                 // If not already retrying, try resending the message with previous history
                 handleMessage(message, true);
-            } else {
-                // Already retried, inform user about the issue
-                message.reply("_Sorry, there was an issue processing your request. Please try again later._");
             }
         } else if (error.message.includes('Text not available. Response was blocked due to SAFETY')) {
             message.reply("_Content not available. Response was blocked due to safety reasons. Please use a different query!_");
