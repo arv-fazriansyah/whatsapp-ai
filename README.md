@@ -34,7 +34,7 @@ Untuk menggunakan proyek ini, Anda perlu melakukan beberapa langkah instalasi. I
 
 7. **Melakukan audit pada package**
    ```bash
-   npm audit
+   npm audit fix
    ```
 
 8. **Memperbarui package yang tersedia**
