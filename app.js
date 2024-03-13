@@ -7,10 +7,10 @@ const MODEL_NAME = process.env.MODEL_NAME || "gemini-1.0-pro";
 const API_KEY = process.env.API_KEY;
 
 const generationConfig = {
-    temperature: 0.7, // Mengurangi temperatur untuk respons yang lebih konsisten
-    topK: 50, // Meningkatkan topK untuk variasi yang lebih besar
-    topP: 0.9, // Mengurangi topP untuk respons yang lebih konsisten
-    maxOutputTokens: 512 // Mengurangi maxOutputTokens untuk mengurangi waktu komputasi
+    temperature: 0.9, // Mengurangi temperatur untuk respons yang lebih konsisten
+    topK: 1, // Meningkatkan topK untuk variasi yang lebih besar
+    topP: 1, // Mengurangi topP untuk respons yang lebih konsisten
+    maxOutputTokens: 2048 // Mengurangi maxOutputTokens untuk mengurangi waktu komputasi
 };
 
 const safetySettings = [
