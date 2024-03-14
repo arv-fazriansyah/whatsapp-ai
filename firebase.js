@@ -35,7 +35,7 @@ const history = [
     { role: "model", parts: [{ text: "Halo, aku Veronisa dirancang oleh fazriansyah.my.id. Asisten yang sangat membantu, kreatif, pintar, dan ramah." }] },
 ];
 
-const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { args: ['--no-sandbox'] } });
+const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] } });
 
 client.on('ready', () => console.log('Client is ready!'));
 client.on('qr', qr => qrcode.generate(qr, { small: true }));
